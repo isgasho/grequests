@@ -22,8 +22,7 @@ func main() {
 	// setBearerToken()
 	// customizeHTTPClient()
 	// setProxy()
-	// useResponseInterceptors()
-	concurrentSafe()
+	// concurrentSafe()
 }
 
 func setParams() {

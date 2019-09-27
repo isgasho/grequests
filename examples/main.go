@@ -23,7 +23,7 @@ func main() {
 	// customizeHTTPClient()
 	// setProxy()
 	// useResponseInterceptors()
-	// concurrentSafe()
+	concurrentSafe()
 }
 
 func setParams() {
@@ -193,39 +193,28 @@ func setProxy() {
 }
 
 func concurrentSafe() {
+	const MaxWorker = 1000
 	wg := new(sync.WaitGroup)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		data, err := grequests.AcquireLock().Get("http://httpbin.org/get").
-			Params(grequests.Value{
-				"key1": "value1",
-				"key2": "value2",
-			}).
-			Send().
-			Text()
-		if err != nil {
-			return
-		}
-		fmt.Println(data)
-	}()
+	for i := 0; i < MaxWorker; i += 1 {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		data, err := grequests.AcquireLock().Get("http://httpbin.org/get").
-			Params(grequests.Value{
-				"key3": "value3",
-				"key4": "value4",
-			}).
-			Send().
-			Text()
-		if err != nil {
-			return
-		}
-		fmt.Println(data)
-	}()
+			params := grequests.Value{}
+			params.Set(fmt.Sprintf("key%d", i), fmt.Sprintf("value%d", i))
+
+			data, err := grequests.AcquireLock().Get("http://httpbin.org/get").
+				Params(params).
+				Send().
+				Text()
+			if err != nil {
+				return
+			}
+
+			fmt.Println(data)
+		}(i)
+	}
 
 	wg.Wait()
 }

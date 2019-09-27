@@ -32,10 +32,10 @@ import "github.com/winterssy/grequests"
 
 ## Examples
 
-[Set Params](#Set-Params)
-[Set Headers](#Set-Headers)
-[Set Cookies](#Set-Cookies)
-[Send Form](#Send-Form)
+- [Set Params](#Set-Params)
+- [Set Headers](#Set-Headers)
+- [Set Cookies](#Set-Cookies)
+- [Send Form](#Send-Form)
 - [Send JSON](#Send-JSON)
 - [Send Files](#Send-Files)
 - [Set Basic Authentication](#Set-Basic-Authentication)

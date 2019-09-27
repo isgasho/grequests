@@ -1,7 +1,7 @@
 # grequests 
 A simple and user-friendly HTTP request library for Go, inspired by the well-known Python project [requests](https://github.com/psf/requests).
 
-[![Build Status](https://travis-ci.org/go-resty/resty.svg?branch=master)](https://travis-ci.org/go-resty/resty) [![Go Report Card](https://goreportcard.com/badge/go-resty/resty)](https://goreportcard.com/report/go-resty/resty) [![GoDoc](https://godoc.org/github.com/go-resty/resty?status.svg)](https://godoc.org/github.com/go-resty/resty) [![License](https://img.shields.io/github/license/go-resty/resty.svg)](LICENSE)
+[![Build Status](https://travis-ci.org/winterssy/grequests.svg?branch=master)](https://travis-ci.org/winterssy/grequests) [![Go Report Card](https://goreportcard.com/badge/winterssy/grequests)](https://goreportcard.com/report/winterssy/grequests) [![GoDoc](https://godoc.org/github.com/winterssy/grequests?status.svg)](https://godoc.org/github.com/winterssy/grequests) [![License](https://img.shields.io/github/license/winterssy/grequests.svg)](LICENSE)
 
 ## Features
 

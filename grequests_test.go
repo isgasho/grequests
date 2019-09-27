@@ -168,35 +168,6 @@ func TestRequest_Cookies(t *testing.T) {
 	}
 }
 
-func TestRequest_Files(t *testing.T) {
-	var data struct {
-		Files map[string]string `json:"files"`
-	}
-	err := grequests.Post("http://httpbin.org/post").
-		Files(
-			&grequests.File{
-				FieldName: "testfile1",
-				FileName:  "testfile1.txt",
-				FilePath:  "./testdata/testfile1.txt",
-			},
-			&grequests.File{
-				FieldName: "testfile2",
-				FileName:  "testfile2.txt",
-				FilePath:  "./testdata/testfile2.txt",
-			},
-		).
-		Send().
-		EnsureStatusOk().
-		JSON(&data)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if data.Files["testfile1"] == "" || data.Files["testfile2"] == "" {
-		t.Error("Send files failed")
-	}
-}
-
 func TestRequest_BasicAuth(t *testing.T) {
 	var data struct {
 		Authenticated bool   `json:"authenticated"`

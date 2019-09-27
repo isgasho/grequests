@@ -20,7 +20,7 @@ A simple and user-friendly HTTP request library for Go, inspired by the well-kno
 
 ## Install
 
-```bash
+```sh
 go get -u github.com/winterssy/grequests
 ```
 

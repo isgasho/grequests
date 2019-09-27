@@ -31,18 +31,19 @@ import "github.com/winterssy/grequests"
 ```
 
 ## Examples
-[Set Params](##Set-Params)
-[Set Headers](##Set-Headers)
-[Set Cookies](##Set-Cookies)
+
+[Set Params](#Set-Params)
+[Set Headers](#Set-Headers)
+[Set Cookies](#Set-Cookies)
 [Send Form](#Send-Form)
-[Send JSON](#Send-JSON)
-[Send Files](#Send-Files)
-[Set Basic Authentication](#Set-Basic-Authentication)
-[Set Bearer Token](#Set-Bearer-oken)
-[Customize HTTP Client](#Customize-HTTP-Client)
-[Set Proxy](#Set-Proxy)
-[Use Response Interceptors](#Use-Response-Interceptors)
-[Concurrent Safe](#Concurrent-Safe)
+- [Send JSON](#Send-JSON)
+- [Send Files](#Send-Files)
+- [Set Basic Authentication](#Set-Basic-Authentication)
+- [Set Bearer Token](#Set-Bearer-Token)
+- [Customize HTTP Client](#Customize-HTTP-Client)
+- [Set Proxy](#Set-Proxy)
+- [Use Response Interceptors](#Use-Response-Interceptors)
+- [Concurrent Safe](#Concurrent-Safe)
 
 ### Set Params
 

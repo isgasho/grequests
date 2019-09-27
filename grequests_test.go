@@ -55,7 +55,7 @@ func TestOptions(t *testing.T) {
 	}
 }
 
-func TestRequest_Params(t *testing.T) {
+func TestParams(t *testing.T) {
 	var data struct {
 		Args map[string]string `json:"args"`
 	}
@@ -76,7 +76,7 @@ func TestRequest_Params(t *testing.T) {
 	}
 }
 
-func TestRequest_Form(t *testing.T) {
+func TestForm(t *testing.T) {
 	var data struct {
 		Form map[string]string `json:"form"`
 	}
@@ -97,7 +97,7 @@ func TestRequest_Form(t *testing.T) {
 	}
 }
 
-func TestRequest_JSON(t *testing.T) {
+func TestJSON(t *testing.T) {
 	var data struct {
 		JSON struct {
 			Msg string `json:"msg"`
@@ -121,7 +121,7 @@ func TestRequest_JSON(t *testing.T) {
 	}
 }
 
-func TestRequest_Headers(t *testing.T) {
+func TestHeaders(t *testing.T) {
 	var data struct {
 		Headers map[string]string `json:"headers"`
 	}
@@ -142,7 +142,7 @@ func TestRequest_Headers(t *testing.T) {
 	}
 }
 
-func TestRequest_Cookies(t *testing.T) {
+func TestCookies(t *testing.T) {
 	var data struct {
 		Cookies map[string]string `json:"cookies"`
 	}
@@ -168,7 +168,7 @@ func TestRequest_Cookies(t *testing.T) {
 	}
 }
 
-func TestRequest_BasicAuth(t *testing.T) {
+func TestBasicAuth(t *testing.T) {
 	var data struct {
 		Authenticated bool   `json:"authenticated"`
 		User          string `json:"user"`
@@ -186,7 +186,7 @@ func TestRequest_BasicAuth(t *testing.T) {
 	}
 }
 
-func TestRequest_BearerToken(t *testing.T) {
+func TestBearerToken(t *testing.T) {
 	var data struct {
 		Authenticated bool   `json:"authenticated"`
 		Token         string `json:"token"`

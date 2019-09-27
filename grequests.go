@@ -224,7 +224,9 @@ func WithRequestInterceptorChain(interceptors ...RequestInterceptor) *Request {
 }
 
 func (req *Request) WithRequestInterceptorChain(interceptors ...RequestInterceptor) *Request {
+	req.reqInterceptorChain.mux.Lock()
 	req.reqInterceptorChain.interceptors = append(req.reqInterceptorChain.interceptors, interceptors...)
+	req.reqInterceptorChain.mux.Unlock()
 	return req
 }
 
@@ -233,7 +235,9 @@ func WithResponseInterceptorChain(interceptors ...ResponseInterceptor) *Request 
 }
 
 func (req *Request) WithResponseInterceptorChain(interceptors ...ResponseInterceptor) *Request {
+	req.respInterceptorChain.mux.Lock()
 	req.respInterceptorChain.interceptors = append(req.respInterceptorChain.interceptors, interceptors...)
+	req.respInterceptorChain.mux.Unlock()
 	return req
 }
 

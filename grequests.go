@@ -177,11 +177,11 @@ func (req *Request) WithTimeout(timeout time.Duration) *Request {
 	return req
 }
 
-func WithClientCertificates(certs ...tls.Certificate) *Request {
-	return std.WithClientCertificates(certs...)
+func AppendClientCertificates(certs ...tls.Certificate) *Request {
+	return std.AppendClientCertificates(certs...)
 }
 
-func (req *Request) WithClientCertificates(certs ...tls.Certificate) *Request {
+func (req *Request) AppendClientCertificates(certs ...tls.Certificate) *Request {
 	transport, ok := req.client.Transport.(*http.Transport)
 	if !ok {
 		return req
@@ -194,11 +194,11 @@ func (req *Request) WithClientCertificates(certs ...tls.Certificate) *Request {
 	return req
 }
 
-func WithRootCAs(pemFilePath string) *Request {
-	return std.WithRootCAs(pemFilePath)
+func AppendRootCAs(pemFilePath string) *Request {
+	return std.AppendRootCAs(pemFilePath)
 }
 
-func (req *Request) WithRootCAs(pemFilePath string) *Request {
+func (req *Request) AppendRootCAs(pemFilePath string) *Request {
 	pemCert, err := ioutil.ReadFile(pemFilePath)
 	if err != nil {
 		return req

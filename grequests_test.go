@@ -192,12 +192,7 @@ func TestRequest_Files(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, ok := data.Files["image1"]
-	if !ok {
-		t.Error("Send files failed")
-	}
-	_, ok = data.Files["image1"]
-	if !ok {
+	if data.Files["testfile1"] == "" || data.Files["testfile2"] == "" {
 		t.Error("Send files failed")
 	}
 }

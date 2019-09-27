@@ -32,19 +32,20 @@ import "github.com/winterssy/grequests"
 
 ## Examples
 
-[Set Params](#Set-Params)
-[Set Headers](#Set-Headers)
-[Set Cookies](#Set-Cookies)
+[Set Params](#Set Params)
+[Set Headers](#Set Headers)
+[Set Cookies](#Set Cookies)
 [Send Form](#Send-Form)
 [Send JSON](#Send-JSON)
 [Send Files](#Send-Files)
 [Set Basic Authentication](#Set-Basic-Authentication)
-[Set Bearer Token](#Set-earer-oken)
+[Set Bearer Token](#Set-Bearer-oken)
 [Customize HTTP Client](#Customize-HTTP-Client)
-[Set Proxy](#Set-roxy)
+[Set Proxy](#Set-Proxy)
 [Use Response Interceptors](#Use-Response-Interceptors)
 [Concurrent Safe](#Concurrent-Safe)
 
+<a name="Set Params"/>
 ### Set Params
 
 ```go
@@ -61,6 +62,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Set Headers"/>
 ### Set Headers
 
 ```go
@@ -77,6 +79,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Set Cookies"/>
 ### Set Cookies
 
 ```go
@@ -99,6 +102,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Send Form"/>
 ### Send Form
 
 ```go
@@ -115,6 +119,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Send JSON"/>
 ### Send JSON
 
 ```go
@@ -131,6 +136,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Send Files"/>
 ### Send Files
 
 ```go
@@ -155,6 +161,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Set Basic Authentication"/>
 ### Set Basic Authentication
 
 ```go
@@ -168,6 +175,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Set Bearer Token"/>
 ### Set Bearer Token
 
 ```go
@@ -181,6 +189,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Customize HTTP Client"/>
 ### Customize HTTP Client
 
 ```go
@@ -214,6 +223,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Set Proxy"/>
 ### Set Proxy
 
 ```go
@@ -227,6 +237,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Use Response Interceptors"/>
 ### Use Response Interceptors
 
 ```go
@@ -240,6 +251,7 @@ if err != nil {
 fmt.Println(data)
 ```
 
+<a name="Concurrent Safe"/>
 ### Concurrent Safe
 
 ```go

@@ -70,10 +70,10 @@ type (
 
 	// Definition of params, headers, form-data, etc.
 	Value map[string]string
-	// Definition of JSON
+	// Definition of JSON.
 	Data map[string]interface{}
 
-	// Definition of multipart-data
+	// Definition of multipart-data.
 	File struct {
 		FieldName string
 		FileName  string
@@ -111,7 +111,7 @@ func (d Data) Del(key string) {
 	delete(d, key)
 }
 
-// New constructor a new client.
+// New constructors and return a new client.
 func New() *Client {
 	c := &Client{
 		httpClient: http.DefaultClient,

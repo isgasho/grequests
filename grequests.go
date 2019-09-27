@@ -25,9 +25,9 @@ import (
 )
 
 const (
-	Ver = "0.1"
+	Ver = "0.1" // grequests version
 
-	DefaultTimeout = 120 * time.Second
+	DefaultTimeout = 120 * time.Second // default timeout
 	ContentType    = "Content-Type"
 	TypeForm       = "application/x-www-form-urlencoded"
 	TypeJSON       = "application/json"
@@ -71,7 +71,7 @@ type (
 	// Definition of params, headers, form-data, etc.
 	Value map[string]string
 	// Definition of JSON
-	Data  map[string]interface{}
+	Data map[string]interface{}
 
 	// Definition of multipart-data
 	File struct {
@@ -91,7 +91,7 @@ func (v Value) Set(key string, value string) {
 	v[key] = value
 }
 
-// Del delete the value related to the given key from a map.
+// Del deletes the value related to the given key from a map.
 func (v Value) Del(key string) {
 	delete(v, key)
 }
@@ -106,7 +106,7 @@ func (d Data) Set(key string, value interface{}) {
 	d[key] = value
 }
 
-// Del delete the value related to the given key from a map.
+// Del deletes the value related to the given key from a map.
 func (d Data) Del(key string) {
 	delete(d, key)
 }

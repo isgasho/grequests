@@ -206,7 +206,7 @@ timeout := 60 * time.Second
 
 req := grequests.WithTransport(transport).
     WithRedirectPolicy(redirectPolicy).
-    WithJar(jar).
+    WithCookieJar(jar).
     WithTimeout(timeout)
 
 data, err := req.Get("http://httpbin.org/get").

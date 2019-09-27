@@ -32,18 +32,18 @@ import "github.com/winterssy/grequests"
 
 ## Examples
 
-[Set Params](#Set Params)
+[Set Params](#Set-arams)
 [Set Headers](#Set-Headers)
-[Set Cookies](#Set Cookies)
-[Send Form](#Send Form)
-[Send JSON](#Send JSON)
-[Send Files](#Send Files)
-[Set Basic Authentication](#Set Basic Authentication)
-[Set Bearer Token](#Set Bearer Token)
-[Set Proxy](#Set Proxy)
-[Customize HTTP Client](#Customize HTTP Client)
-[Use Response Interceptors](#Use Response Interceptors)
-[Concurrent Safe](#Concurrent Safe)
+[Set Cookies](#Set-Cookies)
+[Send Form](#Send-Form)
+[Send JSON](#Send-JSON)
+[Send Files](#Send-Files)
+[Set Basic Authentication](#Set-Basic-Authentication)
+[Set Bearer Token](#Set-earer-oken)
+[Customize HTTP Client](#Customize-HTTP-Client)
+[Set Proxy](#Set-roxy)
+[Use Response Interceptors](#Use-Response-Interceptors)
+[Concurrent Safe](#Concurrent-Safe)
 
 ### Set Params
 
@@ -206,6 +206,19 @@ req := grequests.WithTransport(transport).
     WithTimeout(timeout)
 
 data, err := req.Get("http://httpbin.org/get").
+    Send().
+    Text()
+if err != nil {
+    panic(err)
+}
+fmt.Println(data)
+```
+
+### Set Proxy
+
+```go
+data, err := grequests.ProxyFromURL("http://127.0.0.1:1081").
+    Get("http://httpbin.org/get").
     Send().
     Text()
 if err != nil {

@@ -32,7 +32,7 @@ import "github.com/winterssy/grequests"
 
 ## Examples
 
-[Set Params](#Set-arams)
+[Set Params](#Set-Params)
 [Set Headers](#Set-Headers)
 [Set Cookies](#Set-Cookies)
 [Send Form](#Send-Form)

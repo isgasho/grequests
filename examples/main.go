@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/winterssy/grequests"
+	"golang.org/x/net/publicsuffix"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"sync"
 	"time"
 )
@@ -160,10 +162,14 @@ func customizeHTTPClient() {
 	redirectPolicy := func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
+	jar, _ := cookiejar.New(&cookiejar.Options{
+		PublicSuffixList: publicsuffix.List,
+	})
 	timeout := 60 * time.Second
 
 	req := grequests.WithTransport(transport).
 		WithRedirectPolicy(redirectPolicy).
+		WithJar(jar).
 		WithTimeout(timeout)
 
 	data, err := req.Get("http://httpbin.org/get").

@@ -13,7 +13,7 @@ A simple and user-friendly HTTP request library for Go, inspired by the well-kno
 - Easy customize root certificates and client certificates.
 - Easy set proxy.
 - Easy play with session.
-- Customize HTTP client. Transport, redirect policy and timeout.
+- Customize HTTP client. Transport, redirect policy, cookie jar and timeout.
 - Support request and response interceptor.
 - Responses can be easily serialized into JSON, sting or bytes.
 - Concurrent safe.
@@ -199,10 +199,14 @@ transport := &http.Transport{
 redirectPolicy := func(req *http.Request, via []*http.Request) error {
     return http.ErrUseLastResponse
 }
+jar, _ := cookiejar.New(&cookiejar.Options{
+    PublicSuffixList: publicsuffix.List,
+})
 timeout := 60 * time.Second
 
 req := grequests.WithTransport(transport).
     WithRedirectPolicy(redirectPolicy).
+    WithJar(jar).
     WithTimeout(timeout)
 
 data, err := req.Get("http://httpbin.org/get").

@@ -159,6 +159,15 @@ func (req *Request) WithRedirectPolicy(policy func(req *http.Request, via []*htt
 	return req
 }
 
+func WithJar(jar http.CookieJar) *Request {
+	return std.WithJar(jar)
+}
+
+func (req *Request) WithJar(jar http.CookieJar) *Request {
+	req.client.Jar = jar
+	return req
+}
+
 func WithTimeout(timeout time.Duration) *Request {
 	return std.WithTimeout(timeout)
 }
@@ -266,8 +275,7 @@ func DisableSession() *Request {
 }
 
 func (req *Request) DisableSession() *Request {
-	req.client.Jar = nil
-	return req
+	return req.WithJar(nil)
 }
 
 func DisableRedirect() *Request {

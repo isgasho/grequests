@@ -14,7 +14,7 @@ A simple and user-friendly HTTP request library for Go, inspired by the well-kno
 - Easy set proxy.
 - Automatic cookie management.
 - Customize HTTP client, transport, redirect policy, cookie jar and timeout.
-- Responses can be easily serialized into JSON, sting or bytes.
+- Responses can be easily serialized into JSON, string or bytes.
 - Concurrent safe.
 
 ## Install

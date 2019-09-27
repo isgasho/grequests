@@ -47,19 +47,17 @@ var std = New()
 
 type (
 	Request struct {
-		client               *http.Client
-		method               string
-		url                  string
-		params               Value
-		form                 Value
-		json                 Data
-		headers              Value
-		cookies              []*http.Cookie
-		files                []*File
-		reqInterceptorChain  *requestInterceptorChain
-		respInterceptorChain *responseInterceptorChain
-		mux                  *sync.Mutex
-		withLock             bool
+		client   *http.Client
+		method   string
+		url      string
+		params   Value
+		form     Value
+		json     Data
+		headers  Value
+		cookies  []*http.Cookie
+		files    []*File
+		mux      *sync.Mutex
+		withLock bool
 	}
 
 	Response struct {
@@ -74,19 +72,6 @@ type (
 		FieldName string
 		FileName  string
 		FilePath  string
-	}
-
-	RequestInterceptor  func(httpReq *http.Request) error
-	ResponseInterceptor func(httpResp *http.Response) error
-
-	requestInterceptorChain struct {
-		mux          *sync.RWMutex
-		interceptors []RequestInterceptor
-	}
-
-	responseInterceptorChain struct {
-		mux          *sync.RWMutex
-		interceptors []ResponseInterceptor
 	}
 )
 
@@ -121,13 +106,7 @@ func New() *Request {
 		form:    make(Value),
 		json:    make(Data),
 		headers: make(Value),
-		reqInterceptorChain: &requestInterceptorChain{
-			mux: new(sync.RWMutex),
-		},
-		respInterceptorChain: &responseInterceptorChain{
-			mux: new(sync.RWMutex),
-		},
-		mux: new(sync.Mutex),
+		mux:     new(sync.Mutex),
 	}
 
 	jar, _ := cookiejar.New(&cookiejar.Options{
@@ -216,28 +195,6 @@ func (req *Request) AppendRootCAs(pemFilePath string) *Request {
 	}
 
 	transport.TLSClientConfig.RootCAs.AppendCertsFromPEM(pemCert)
-	return req
-}
-
-func WithRequestInterceptorChain(interceptors ...RequestInterceptor) *Request {
-	return std.WithRequestInterceptorChain(interceptors...)
-}
-
-func (req *Request) WithRequestInterceptorChain(interceptors ...RequestInterceptor) *Request {
-	req.reqInterceptorChain.mux.Lock()
-	req.reqInterceptorChain.interceptors = append(req.reqInterceptorChain.interceptors, interceptors...)
-	req.reqInterceptorChain.mux.Unlock()
-	return req
-}
-
-func WithResponseInterceptorChain(interceptors ...ResponseInterceptor) *Request {
-	return std.WithResponseInterceptorChain(interceptors...)
-}
-
-func (req *Request) WithResponseInterceptorChain(interceptors ...ResponseInterceptor) *Request {
-	req.respInterceptorChain.mux.Lock()
-	req.respInterceptorChain.interceptors = append(req.respInterceptorChain.interceptors, interceptors...)
-	req.respInterceptorChain.mux.Unlock()
 	return req
 }
 
@@ -375,7 +332,7 @@ func (req *Request) Put(url string) *Request {
 }
 
 func Patch(url string) *Request {
-	return std.Get(url)
+	return std.Patch(url)
 }
 
 func (req *Request) Patch(url string) *Request {
@@ -532,36 +489,10 @@ func (req *Request) Send() *Response {
 
 	req.Reset()
 
-	// 请求拦截器
-	if len(req.reqInterceptorChain.interceptors) != 0 {
-		req.reqInterceptorChain.mux.RLock()
-		defer req.reqInterceptorChain.mux.RUnlock()
-		for _, interceptor := range req.reqInterceptorChain.interceptors {
-			err = interceptor(httpReq)
-			if err != nil {
-				result.Err = err
-				return result
-			}
-		}
-	}
-
 	httpResp, err := req.client.Do(httpReq)
 	if err != nil {
 		result.Err = err
 		return result
-	}
-
-	// 响应拦截器
-	if len(req.respInterceptorChain.interceptors) != 0 {
-		req.respInterceptorChain.mux.RLock()
-		defer req.respInterceptorChain.mux.RUnlock()
-		for _, interceptor := range req.respInterceptorChain.interceptors {
-			err = interceptor(httpResp)
-			if err != nil {
-				result.Err = err
-				return result
-			}
-		}
 	}
 
 	result.R = httpResp
@@ -679,16 +610,22 @@ func (resp *Response) JSON(v interface{}) error {
 	return json.Unmarshal(b, v)
 }
 
-func EnsureStatusOk(httpResp *http.Response) (err error) {
-	if httpResp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("status code 200 expected but got: %d", httpResp.StatusCode)
+func (resp *Response) EnsureStatusOk() *Response {
+	if resp.Err != nil {
+		return resp
 	}
-	return
+	if resp.R.StatusCode != http.StatusOK {
+		resp.Err = fmt.Errorf("status code 200 expected but got: %d", resp.R.StatusCode)
+	}
+	return resp
 }
 
-func EnsureStatus2xx(httpResp *http.Response) (err error) {
-	if httpResp.StatusCode/100 != 2 {
-		err = fmt.Errorf("status code 2xx expected but got: %d", httpResp.StatusCode)
+func (resp *Response) EnsureStatus2xx(httpResp *http.Response) *Response {
+	if resp.Err != nil {
+		return resp
 	}
-	return
+	if resp.R.StatusCode != http.StatusOK {
+		resp.Err = fmt.Errorf("status code 2xx expected but got: %d", resp.R.StatusCode)
+	}
+	return resp
 }

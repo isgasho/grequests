@@ -5,16 +5,15 @@ A simple and user-friendly HTTP request library for Go, inspired by the well-kno
 
 ## Features
 
-- Support for all HTTP verbs. GET, HEAD, POST, PUT, PATCH, DELETE, CONNECT, OPTIONS, TRACE.
+- GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, etc.
 - Easy set query params, headers and cookies.
 - Easy encode a form-data or JSON into the request body.
 - Easy upload one or more file(s).
 - Easy set basic authentication or bearer token.
 - Easy customize root certificates and client certificates.
 - Easy set proxy.
-- Easy play with session.
-- Customize HTTP client. Transport, redirect policy, cookie jar and timeout.
-- Support request and response interceptor.
+- Automatic cookie management.
+- Customize HTTP client, transport, redirect policy, cookie jar and timeout.
 - Responses can be easily serialized into JSON, sting or bytes.
 - Concurrent safe.
 
@@ -42,7 +41,6 @@ import "github.com/winterssy/grequests"
 - [Set Bearer Token](#Set-Bearer-Token)
 - [Customize HTTP Client](#Customize-HTTP-Client)
 - [Set Proxy](#Set-Proxy)
-- [Use Response Interceptors](#Use-Response-Interceptors)
 - [Concurrent Safe](#Concurrent-Safe)
 
 ### Set Params
@@ -120,8 +118,8 @@ fmt.Println(data)
 ```go
 data, err := grequests.Post("http://httpbin.org/post").
     JSON(grequests.Data{
-        "key1": "value1",
-        "key2": []interface{}{"v", "a", "l", "u", "e", 2},
+        "msg": "hello world",
+		"num": 2019,
     }).
     Send().
     Text()
@@ -158,8 +156,8 @@ fmt.Println(data)
 ### Set Basic Authentication
 
 ```go
-data, err := grequests.Get("http://httpbin.org/basic-auth/user/pass").
-    BasicAuth("user", "pass").
+data, err := grequests.Get("http://httpbin.org/basic-auth/admin/pass").
+    BasicAuth("admin", "pass").
     Send().
     Text()
 if err != nil {
@@ -222,19 +220,6 @@ fmt.Println(data)
 
 ```go
 data, err := grequests.ProxyFromURL("http://127.0.0.1:1081").
-    Get("http://httpbin.org/get").
-    Send().
-    Text()
-if err != nil {
-    panic(err)
-}
-fmt.Println(data)
-```
-
-### Use Response Interceptors
-
-```go
-data, err := grequests.WithResponseInterceptorChain(grequests.EnsureStatusOk).
     Get("http://httpbin.org/get").
     Send().
     Text()

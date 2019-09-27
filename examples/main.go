@@ -19,7 +19,7 @@ func main() {
 	// sendJSON()
 	// sendFiles()
 	// setBasicAuth()
-	// setBearerToken()
+	setBearerToken()
 	// customizeHTTPClient()
 	// setProxy()
 	// useResponseInterceptors()
@@ -91,8 +91,8 @@ func sendForm() {
 func sendJSON() {
 	data, err := grequests.Post("http://httpbin.org/post").
 		JSON(grequests.Data{
-			"key1": "value1",
-			"key2": []interface{}{"v", "a", "l", "u", "e", 2},
+			"msg": "hello world",
+			"num": 2019,
 		}).
 		Send().
 		Text()
@@ -125,8 +125,8 @@ func sendFiles() {
 }
 
 func setBasicAuth() {
-	data, err := grequests.Get("http://httpbin.org/basic-auth/user/pass").
-		BasicAuth("user", "pass").
+	data, err := grequests.Get("http://httpbin.org/basic-auth/admin/pass").
+		BasicAuth("admin", "pass").
 		Send().
 		Text()
 	if err != nil {
@@ -183,17 +183,6 @@ func customizeHTTPClient() {
 
 func setProxy() {
 	data, err := grequests.ProxyFromURL("http://127.0.0.1:1081").
-		Get("http://httpbin.org/get").
-		Send().
-		Text()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(data)
-}
-
-func useResponseInterceptors() {
-	data, err := grequests.WithResponseInterceptorChain(grequests.EnsureStatusOk).
 		Get("http://httpbin.org/get").
 		Send().
 		Text()

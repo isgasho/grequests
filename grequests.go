@@ -111,7 +111,7 @@ func (d Data) Del(key string) {
 	delete(d, key)
 }
 
-// New constructors and return a new client.
+// New constructors and returns a new client.
 func New() *Client {
 	c := &Client{
 		httpClient: http.DefaultClient,
@@ -578,7 +578,7 @@ func (c *Client) Send() *Response {
 		return resp
 	}
 	if c.method == "" {
-		resp.Err = errors.New("http method not specified")
+		resp.Err = errors.New("method not specified")
 		c.Reset()
 		return resp
 	}

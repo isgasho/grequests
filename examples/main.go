@@ -21,7 +21,7 @@ func main() {
 	// setBasicAuth()
 	// setBearerToken()
 	// customizeHTTPClient()
-	setProxy()
+	// setProxy()
 	// useResponseInterceptors()
 	// concurrentSafe()
 }

@@ -381,6 +381,10 @@ func (req *Request) Trace(url string) *Request {
 	return req
 }
 
+func Reset() {
+	std.Reset()
+}
+
 func (req *Request) Reset() {
 	req.method = ""
 	req.url = ""
@@ -396,11 +400,19 @@ func (req *Request) Reset() {
 	}
 }
 
+func Params(params Value) *Request {
+	return std.Params(params)
+}
+
 func (req *Request) Params(params Value) *Request {
 	for k, v := range params {
 		req.params.Set(k, v)
 	}
 	return req
+}
+
+func Form(form Value) *Request {
+	return std.Form(form)
 }
 
 func (req *Request) Form(form Value) *Request {
@@ -411,6 +423,10 @@ func (req *Request) Form(form Value) *Request {
 	return req
 }
 
+func JSON(data Data) *Request {
+	return std.JSON(data)
+}
+
 func (req *Request) JSON(data Data) *Request {
 	req.headers.Set(ContentType, TypeJSON)
 	for k, v := range data {
@@ -419,9 +435,17 @@ func (req *Request) JSON(data Data) *Request {
 	return req
 }
 
+func Files(files ...*File) *Request {
+	return std.Files(files...)
+}
+
 func (req *Request) Files(files ...*File) *Request {
 	req.files = append(req.files, files...)
 	return req
+}
+
+func Headers(headers Value) *Request {
+	return std.Headers(headers)
 }
 
 func (req *Request) Headers(headers Value) *Request {
@@ -429,6 +453,10 @@ func (req *Request) Headers(headers Value) *Request {
 		req.headers.Set(k, v)
 	}
 	return req
+}
+
+func Cookies(cookies ...*http.Cookie) *Request {
+	return std.Cookies(cookies...)
 }
 
 func (req *Request) Cookies(cookies ...*http.Cookie) *Request {

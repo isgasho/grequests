@@ -19,7 +19,7 @@ func main() {
 	// sendJSON()
 	// sendFiles()
 	// setBasicAuth()
-	setBearerToken()
+	// setBearerToken()
 	// customizeHTTPClient()
 	// setProxy()
 	// useResponseInterceptors()
@@ -106,14 +106,14 @@ func sendFiles() {
 	data, err := grequests.Post("http://httpbin.org/post").
 		Files(
 			&grequests.File{
-				FieldName: "image1",
-				FileName:  "image1.jpg",
-				FilePath:  "./testdata/image1.jpg",
+				FieldName: "testimage1",
+				FileName:  "testimage1.jpg",
+				FilePath:  "./testdata/testimage1.jpg",
 			},
 			&grequests.File{
-				FieldName: "image2",
-				FileName:  "image2.jpg",
-				FilePath:  "./testdata/image2.jpg",
+				FieldName: "testimage2",
+				FileName:  "testimage2.jpg",
+				FilePath:  "./testdata/testimage2.jpg",
 			},
 		).
 		Send().

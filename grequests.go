@@ -32,11 +32,12 @@ const (
 	TypeForm       = "application/x-www-form-urlencoded"
 	TypeJSON       = "application/json"
 
+	// HTTP method
 	MethodGet     = "GET"
 	MethodHead    = "HEAD"
 	MethodPost    = "POST"
 	MethodPut     = "PUT"
-	MethodPatch   = "PATCH" // RFC 5789
+	MethodPatch   = "PATCH"
 	MethodDelete  = "DELETE"
 	MethodConnect = "CONNECT"
 	MethodOptions = "OPTIONS"
@@ -46,28 +47,33 @@ const (
 var std = New()
 
 type (
-	Request struct {
-		client   *http.Client
-		method   string
-		url      string
-		params   Value
-		form     Value
-		json     Data
-		headers  Value
-		cookies  []*http.Cookie
-		files    []*File
-		mux      *sync.Mutex
-		withLock bool
+	// Definition of grequests client.
+	Client struct {
+		httpClient *http.Client
+		method     string
+		url        string
+		params     Value
+		form       Value
+		json       Data
+		headers    Value
+		cookies    []*http.Cookie
+		files      []*File
+		mux        *sync.Mutex
+		withLock   bool
 	}
 
+	// Wrapper of HTTP response and request error.
 	Response struct {
 		R   *http.Response
 		Err error
 	}
 
+	// Definition of params, headers, form-data, etc.
 	Value map[string]string
+	// Definition of JSON
 	Data  map[string]interface{}
 
+	// Definition of multipart-data
 	File struct {
 		FieldName string
 		FileName  string
@@ -75,117 +81,136 @@ type (
 	}
 )
 
+// Get gets the value from a map by the given key.
 func (v Value) Get(key string) string {
 	return v[key]
 }
 
+// Set sets a kv pair into a map.
 func (v Value) Set(key string, value string) {
 	v[key] = value
 }
 
+// Del delete the value related to the given key from a map.
 func (v Value) Del(key string) {
 	delete(v, key)
 }
 
+// Get gets the value from a map by the given key.
 func (d Data) Get(key string) interface{} {
 	return d[key]
 }
 
+// Set sets a kv pair into a map.
 func (d Data) Set(key string, value interface{}) {
 	d[key] = value
 }
 
+// Del delete the value related to the given key from a map.
 func (d Data) Del(key string) {
 	delete(d, key)
 }
 
-func New() *Request {
-	req := &Request{
-		client:  http.DefaultClient,
-		params:  make(Value),
-		form:    make(Value),
-		json:    make(Data),
-		headers: make(Value),
-		mux:     new(sync.Mutex),
+// New constructor a new client.
+func New() *Client {
+	c := &Client{
+		httpClient: http.DefaultClient,
+		params:     make(Value),
+		form:       make(Value),
+		json:       make(Data),
+		headers:    make(Value),
+		mux:        new(sync.Mutex),
 	}
 
 	jar, _ := cookiejar.New(&cookiejar.Options{
 		PublicSuffixList: publicsuffix.List,
 	})
-	req.client.Jar = jar
-	req.client.Transport = http.DefaultTransport
-	req.client.Timeout = DefaultTimeout
+	c.httpClient.Jar = jar
+	c.httpClient.Transport = http.DefaultTransport
+	c.httpClient.Timeout = DefaultTimeout
 
-	req.headers.Set("User-Agent", "grequests "+Ver)
-	return req
+	c.headers.Set("User-Agent", "grequests "+Ver)
+	return c
 }
 
-func WithTransport(transport http.RoundTripper) *Request {
+// WithTransport calls std.WithTransport to set transport.
+func WithTransport(transport http.RoundTripper) *Client {
 	return std.WithTransport(transport)
 }
 
-func (req *Request) WithTransport(transport http.RoundTripper) *Request {
-	req.client.Transport = transport
-	return req
+// WithTransport sets transport for the HTTP client.
+func (c *Client) WithTransport(transport http.RoundTripper) *Client {
+	c.httpClient.Transport = transport
+	return c
 }
 
-func WithRedirectPolicy(policy func(req *http.Request, via []*http.Request) error) *Request {
+// WithRedirectPolicy calls std.WithRedirectPolicy to set redirect policy.
+func WithRedirectPolicy(policy func(req *http.Request, via []*http.Request) error) *Client {
 	return std.WithRedirectPolicy(policy)
 }
 
-func (req *Request) WithRedirectPolicy(policy func(req *http.Request, via []*http.Request) error) *Request {
-	req.client.CheckRedirect = policy
-	return req
+// WithRedirectPolicy sets redirect policy for the HTTP client
+func (c *Client) WithRedirectPolicy(policy func(req *http.Request, via []*http.Request) error) *Client {
+	c.httpClient.CheckRedirect = policy
+	return c
 }
 
-func WithCookieJar(jar http.CookieJar) *Request {
+// WithCookieJar call std.WithCookieJar to set cookie jar.
+func WithCookieJar(jar http.CookieJar) *Client {
 	return std.WithCookieJar(jar)
 }
 
-func (req *Request) WithCookieJar(jar http.CookieJar) *Request {
-	req.client.Jar = jar
-	return req
+// WithCookieJar sets cookie jar for the HTTP client.
+func (c *Client) WithCookieJar(jar http.CookieJar) *Client {
+	c.httpClient.Jar = jar
+	return c
 }
 
-func WithTimeout(timeout time.Duration) *Request {
+// WithTimeout calls std.WithTimeout to set timeout.
+func WithTimeout(timeout time.Duration) *Client {
 	return std.WithTimeout(timeout)
 }
 
-func (req *Request) WithTimeout(timeout time.Duration) *Request {
-	req.client.Timeout = timeout
-	return req
+// WithTimeout set timeout for the HTTP client.
+func (c *Client) WithTimeout(timeout time.Duration) *Client {
+	c.httpClient.Timeout = timeout
+	return c
 }
 
-func AppendClientCertificates(certs ...tls.Certificate) *Request {
+// AppendClientCertificates calls std.AppendClientCertificates to append client certificates.
+func AppendClientCertificates(certs ...tls.Certificate) *Client {
 	return std.AppendClientCertificates(certs...)
 }
 
-func (req *Request) AppendClientCertificates(certs ...tls.Certificate) *Request {
-	transport, ok := req.client.Transport.(*http.Transport)
+// AppendClientCertificates appends client certificates for the HTTP client.
+func (c *Client) AppendClientCertificates(certs ...tls.Certificate) *Client {
+	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
-		return req
+		return c
 	}
 	if transport.TLSClientConfig == nil {
 		transport.TLSClientConfig = &tls.Config{}
 	}
 
 	transport.TLSClientConfig.Certificates = append(transport.TLSClientConfig.Certificates, certs...)
-	return req
+	return c
 }
 
-func AppendRootCAs(pemFilePath string) *Request {
+// AppendRootCAs calls std.AppendRootCAs to append RootCAs.
+func AppendRootCAs(pemFilePath string) *Client {
 	return std.AppendRootCAs(pemFilePath)
 }
 
-func (req *Request) AppendRootCAs(pemFilePath string) *Request {
+// AppendRootCAs appends RootCAs for the HTTP client.
+func (c *Client) AppendRootCAs(pemFilePath string) *Client {
 	pemCert, err := ioutil.ReadFile(pemFilePath)
 	if err != nil {
-		return req
+		return c
 	}
 
-	transport, ok := req.client.Transport.(*http.Transport)
+	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
-		return req
+		return c
 	}
 	if transport.TLSClientConfig == nil {
 		transport.TLSClientConfig = &tls.Config{}
@@ -195,278 +220,332 @@ func (req *Request) AppendRootCAs(pemFilePath string) *Request {
 	}
 
 	transport.TLSClientConfig.RootCAs.AppendCertsFromPEM(pemCert)
-	return req
+	return c
 }
 
-func ProxyFromURL(url string) *Request {
+// ProxyFromURL calls std.ProxyFromURL to set proxy from a url.
+func ProxyFromURL(url string) *Client {
 	return std.ProxyFromURL(url)
 }
 
-func (req *Request) ProxyFromURL(url string) *Request {
+// ProxyFromURL sets proxy from a url for the HTTP client.
+func (c *Client) ProxyFromURL(url string) *Client {
 	proxyURL, err := urlpkg.Parse(url)
 	if err != nil {
-		return req
+		return c
 	}
 
-	transport, ok := req.client.Transport.(*http.Transport)
+	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
-		return req
+		return c
 	}
 
 	transport.Proxy = http.ProxyURL(proxyURL)
-	return req
+	return c
 }
 
-func DisableProxyFromEnvironment() *Request {
+// DisableProxyFromEnvironment calls std.DisableProxyFromEnvironment to disable proxy from environment.
+func DisableProxyFromEnvironment() *Client {
 	return std.DisableProxyFromEnvironment()
 }
 
-func (req *Request) DisableProxyFromEnvironment() *Request {
-	transport, ok := req.client.Transport.(*http.Transport)
+// DisableProxyFromEnvironment disables proxy form environment for HTTP client.
+func (c *Client) DisableProxyFromEnvironment() *Client {
+	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
-		return req
+		return c
 	}
 
 	transport.Proxy = nil
-	return req
+	return c
 }
 
-func DisableSession() *Request {
+// DisableSession calls std.DisableSession to disable session.
+func DisableSession() *Client {
 	return std.DisableSession()
 }
 
-func (req *Request) DisableSession() *Request {
-	return req.WithCookieJar(nil)
+// DisableSession disables session for the HTTP client.
+func (c *Client) DisableSession() *Client {
+	return c.WithCookieJar(nil)
 }
 
-func DisableRedirect() *Request {
+// DisableRedirect calls std.DisableRedirect to disable request redirect.
+func DisableRedirect() *Client {
 	return std.DisableRedirect()
 }
 
-func (req *Request) DisableRedirect() *Request {
-	req.client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+// DisableRedirect disables request redirect for the HTTP client.
+func (c *Client) DisableRedirect() *Client {
+	c.httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}
-	return req
+	return c
 }
 
-func DisableKeepAlives() *Request {
+// DisableKeepAlives calls std.DisableKeepAlives to disable Keep-Alive.
+func DisableKeepAlives() *Client {
 	return std.DisableKeepAlives()
 }
 
-func (req *Request) DisableKeepAlives() *Request {
-	transport, ok := req.client.Transport.(*http.Transport)
+// DisableKeepAlives disables Keep-Alive for the HTTP client.
+func (c *Client) DisableKeepAlives() *Client {
+	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
-		return req
+		return c
 	}
 
 	transport.DisableKeepAlives = true
-	return req
+	return c
 }
 
-func InsecureSkipVerify() *Request {
+// InsecureSkipVerify calls std.InsecureSkipVerify to skip verify insecure certificates.
+func InsecureSkipVerify() *Client {
 	return std.InsecureSkipVerify()
 }
 
-func (req *Request) InsecureSkipVerify() *Request {
-	transport, ok := req.client.Transport.(*http.Transport)
+// InsecureSkipVerify skips verify insecure certificates for the HTTP client.
+func (c *Client) InsecureSkipVerify() *Client {
+	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
-		return req
+		return c
 	}
 
 	if transport.TLSClientConfig == nil {
 		transport.TLSClientConfig = &tls.Config{}
 	}
 	transport.TLSClientConfig.InsecureSkipVerify = true
-	return req
+	return c
 }
 
-func AcquireLock() *Request {
+// AcquireLock calls std.AcquireLock to lock std.
+func AcquireLock() *Client {
 	return std.AcquireLock()
 }
 
-func (req *Request) AcquireLock() *Request {
-	req.mux.Lock()
-	req.withLock = true
-	return req
+// AcquireLock locks c.
+// Use grequests across goroutines you must call AcquireLock for each request in the beginning
+// otherwise would cause data race.
+func (c *Client) AcquireLock() *Client {
+	c.mux.Lock()
+	c.withLock = true
+	return c
 }
 
-func Get(url string) *Request {
+// Get calls std.Get for GET HTTP request.
+func Get(url string) *Client {
 	return std.Get(url)
 }
 
-func (req *Request) Get(url string) *Request {
-	req.method = MethodGet
-	req.url = url
-	return req
+// Get does GET HTTP request.
+func (c *Client) Get(url string) *Client {
+	c.method = MethodGet
+	c.url = url
+	return c
 }
 
-func Head(url string) *Request {
+// Head calls std.Head for HEAD HTTP request.
+func Head(url string) *Client {
 	return std.Head(url)
 }
 
-func (req *Request) Head(url string) *Request {
-	req.method = MethodHead
-	req.url = url
-	return req
+// Head does HEAD HTTP request.
+func (c *Client) Head(url string) *Client {
+	c.method = MethodHead
+	c.url = url
+	return c
 }
 
-func Post(url string) *Request {
+// Post calls std.Post for POST HTTP request.
+func Post(url string) *Client {
 	return std.Post(url)
 }
 
-func (req *Request) Post(url string) *Request {
-	req.method = MethodPost
-	req.url = url
-	return req
+// Post does POST HTTP request.
+func (c *Client) Post(url string) *Client {
+	c.method = MethodPost
+	c.url = url
+	return c
 }
 
-func Put(url string) *Request {
+// Put calls std.Put for PUT HTTP request.
+func Put(url string) *Client {
 	return std.Put(url)
 }
 
-func (req *Request) Put(url string) *Request {
-	req.method = MethodPut
-	req.url = url
-	return req
+// Put does PUT HTTP request.
+func (c *Client) Put(url string) *Client {
+	c.method = MethodPut
+	c.url = url
+	return c
 }
 
-func Patch(url string) *Request {
+// Patch calls std.Patch for PATCH HTTP request.
+func Patch(url string) *Client {
 	return std.Patch(url)
 }
 
-func (req *Request) Patch(url string) *Request {
-	req.method = MethodPatch
-	req.url = url
-	return req
+// Patch does PATCH HTTP request.
+func (c *Client) Patch(url string) *Client {
+	c.method = MethodPatch
+	c.url = url
+	return c
 }
 
-func Delete(url string) *Request {
+// DELETE calls std.Delete for DELETE HTTP request.
+func Delete(url string) *Client {
 	return std.Delete(url)
 }
 
-func (req *Request) Delete(url string) *Request {
-	req.method = MethodDelete
-	req.url = url
-	return req
+// Delete does DELETE HTTP request.
+func (c *Client) Delete(url string) *Client {
+	c.method = MethodDelete
+	c.url = url
+	return c
 }
 
-func Connect(url string) *Request {
+// Connect calls std.Connect CONNECT HTTP request.
+func Connect(url string) *Client {
 	return std.Connect(url)
 }
 
-func (req *Request) Connect(url string) *Request {
-	req.method = MethodConnect
-	req.url = url
-	return req
+// Connect does CONNECT HTTP request.
+func (c *Client) Connect(url string) *Client {
+	c.method = MethodConnect
+	c.url = url
+	return c
 }
 
-func Options(url string) *Request {
+// Options calls std.Options for OPTIONS HTTP request.
+func Options(url string) *Client {
 	return std.Options(url)
 }
 
-func (req *Request) Options(url string) *Request {
-	req.method = MethodOptions
-	req.url = url
-	return req
+// Options does OPTIONS HTTP request.
+func (c *Client) Options(url string) *Client {
+	c.method = MethodOptions
+	c.url = url
+	return c
 }
 
-func Trace(url string) *Request {
+// Trace calls std.Trace for TRACE HTTP request.
+func Trace(url string) *Client {
 	return std.Trace(url)
 }
 
-func (req *Request) Trace(url string) *Request {
-	req.method = MethodTrace
-	req.url = url
-	return req
+// Trace does TRACE HTTP request.
+func (c *Client) Trace(url string) *Client {
+	c.method = MethodTrace
+	c.url = url
+	return c
 }
 
+// Reset calls std.Reset to reset the client state.
 func Reset() {
 	std.Reset()
 }
 
-func (req *Request) Reset() {
-	req.method = ""
-	req.url = ""
-	req.params = make(Value)
-	req.form = make(Value)
-	req.json = make(Data)
-	req.headers = make(Value)
-	req.cookies = nil
-	req.files = nil
+// Reset reset the client state so that other requests can acquire lock.
+func (c *Client) Reset() {
+	c.method = ""
+	c.url = ""
+	c.params = make(Value)
+	c.form = make(Value)
+	c.json = make(Data)
+	c.headers = make(Value)
+	c.cookies = nil
+	c.files = nil
 
-	if req.withLock {
-		req.mux.Unlock()
+	if c.withLock {
+		c.mux.Unlock()
 	}
 }
 
-func Params(params Value) *Request {
+// Params calls std.Params to set query params.
+func Params(params Value) *Client {
 	return std.Params(params)
 }
 
-func (req *Request) Params(params Value) *Request {
+// Params sets query params for the HTTP request.
+func (c *Client) Params(params Value) *Client {
 	for k, v := range params {
-		req.params.Set(k, v)
+		c.params.Set(k, v)
 	}
-	return req
+	return c
 }
 
-func Form(form Value) *Request {
+// Form calls std.Form to send form-data.
+func Form(form Value) *Client {
 	return std.Form(form)
 }
 
-func (req *Request) Form(form Value) *Request {
-	req.headers.Set(ContentType, TypeForm)
+// Form encodes form-data into the HTTP request body.
+func (c *Client) Form(form Value) *Client {
+	c.headers.Set(ContentType, TypeForm)
 	for k, v := range form {
-		req.form.Set(k, v)
+		c.form.Set(k, v)
 	}
-	return req
+	return c
 }
 
-func JSON(data Data) *Request {
+// JSON calls std.JSON to send JSON.
+func JSON(data Data) *Client {
 	return std.JSON(data)
 }
 
-func (req *Request) JSON(data Data) *Request {
-	req.headers.Set(ContentType, TypeJSON)
+// JSON encodes JSON into the HTTP request body.
+func (c *Client) JSON(data Data) *Client {
+	c.headers.Set(ContentType, TypeJSON)
 	for k, v := range data {
-		req.json.Set(k, v)
+		c.json.Set(k, v)
 	}
-	return req
+	return c
 }
 
-func Files(files ...*File) *Request {
+// Files calls std.Files to send multipart-data.
+func Files(files ...*File) *Client {
 	return std.Files(files...)
 }
 
-func (req *Request) Files(files ...*File) *Request {
-	req.files = append(req.files, files...)
-	return req
+// Files encodes multipart-data into the HTTP request body.
+func (c *Client) Files(files ...*File) *Client {
+	c.files = append(c.files, files...)
+	return c
 }
 
-func Headers(headers Value) *Request {
+// Headers calls std.Headers to set headers.
+func Headers(headers Value) *Client {
 	return std.Headers(headers)
 }
 
-func (req *Request) Headers(headers Value) *Request {
+// Headers sets headers for the HTTP request.
+func (c *Client) Headers(headers Value) *Client {
 	for k, v := range headers {
-		req.headers.Set(k, v)
+		c.headers.Set(k, v)
 	}
-	return req
+	return c
 }
 
-func Cookies(cookies ...*http.Cookie) *Request {
+// Cookies calls std.Cookies to set cookies.
+func Cookies(cookies ...*http.Cookie) *Client {
 	return std.Cookies(cookies...)
 }
 
-func (req *Request) Cookies(cookies ...*http.Cookie) *Request {
-	req.cookies = append(req.cookies, cookies...)
-	return req
+// Cookies sets cookies for the HTTP request.
+func (c *Client) Cookies(cookies ...*http.Cookie) *Client {
+	c.cookies = append(c.cookies, cookies...)
+	return c
 }
 
-func (req *Request) BasicAuth(username, password string) *Request {
-	req.headers.Set("Authorization", "Basic "+basicAuth(username, password))
-	return req
+// BasicAuth calls std.BasicAuth to set basic authentication.
+func BasicAuth(username, password string) *Client {
+	return std.BasicAuth(username, password)
+}
+
+// BasicAuth sets basic authentication for the HTTP request.
+func (c *Client) BasicAuth(username, password string) *Client {
+	c.headers.Set("Authorization", "Basic "+basicAuth(username, password))
+	return c
 }
 
 func basicAuth(username, password string) string {
@@ -474,88 +553,105 @@ func basicAuth(username, password string) string {
 	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
-func (req *Request) BearerToken(token string) *Request {
-	req.headers.Set("Authorization", "Bearer "+token)
-	return req
+// BearerToken calls std.BearerToken to set bearer token.
+func BearerToken(token string) *Client {
+	return std.BearerToken(token)
 }
 
-func (req *Request) Send() *Response {
-	result := new(Response)
-	if req.url == "" {
-		result.Err = errors.New("url not specified")
-		req.Reset()
-		return result
+// BearerToken sets bearer token for the HTTP request.
+func (c *Client) BearerToken(token string) *Client {
+	c.headers.Set("Authorization", "Bearer "+token)
+	return c
+}
+
+// Send calls std.Send to send HTTP request.
+func Send() *Response {
+	return std.Send()
+}
+
+// Send sends HTTP request and get its response.
+func (c *Client) Send() *Response {
+	resp := new(Response)
+	if c.url == "" {
+		resp.Err = errors.New("url not specified")
+		c.Reset()
+		return resp
+	}
+	if c.method == "" {
+		resp.Err = errors.New("http method not specified")
+		c.Reset()
+		return resp
 	}
 
 	var httpReq *http.Request
 	var err error
-	contentType := req.headers.Get(ContentType)
-	if len(req.files) != 0 {
-		httpReq, err = req.buildMultipartRequest()
+	contentType := c.headers.Get(ContentType)
+	if len(c.files) != 0 {
+		httpReq, err = c.buildMultipartRequest()
 	} else if strings.HasPrefix(contentType, TypeForm) {
-		httpReq, err = req.buildFormRequest()
+		httpReq, err = c.buildFormRequest()
 	} else if strings.HasPrefix(contentType, TypeJSON) {
-		httpReq, err = req.buildJSONRequest()
+		httpReq, err = c.buildJSONRequest()
 	} else {
-		httpReq, err = req.buildStdRequest()
+		httpReq, err = c.buildStdRequest()
 	}
 	if err != nil {
-		result.Err = err
-		req.Reset()
-		return result
+		resp.Err = err
+		c.Reset()
+		return resp
 	}
 
-	if len(req.params) != 0 {
-		req.addParams(httpReq)
+	if len(c.params) != 0 {
+		c.addParams(httpReq)
 	}
-	if len(req.headers) != 0 {
-		req.addHeaders(httpReq)
+	if len(c.headers) != 0 {
+		c.addHeaders(httpReq)
 	}
-	if len(req.cookies) != 0 {
-		req.addCookies(httpReq)
+	if len(c.cookies) != 0 {
+		c.addCookies(httpReq)
 	}
 
-	req.Reset()
+	c.Reset()
 
-	httpResp, err := req.client.Do(httpReq)
+	httpResp, err := c.httpClient.Do(httpReq)
 	if err != nil {
-		result.Err = err
-		return result
+		resp.Err = err
+		return resp
 	}
 
-	result.R = httpResp
-	return result
+	resp.R = httpResp
+	return resp
 }
 
-func (req *Request) buildStdRequest() (*http.Request, error) {
-	return http.NewRequest(req.method, req.url, nil)
+func (c *Client) buildStdRequest() (*http.Request, error) {
+	return http.NewRequest(c.method, c.url, nil)
 }
 
-func (req *Request) buildFormRequest() (*http.Request, error) {
+func (c *Client) buildFormRequest() (*http.Request, error) {
 	form := urlpkg.Values{}
-	for k, v := range req.form {
+	for k, v := range c.form {
 		form.Set(k, v)
 	}
-	return http.NewRequest(req.method, req.url, strings.NewReader(form.Encode()))
+	return http.NewRequest(c.method, c.url, strings.NewReader(form.Encode()))
 }
 
-func (req *Request) buildJSONRequest() (*http.Request, error) {
-	b, err := json.Marshal(req.json)
+func (c *Client) buildJSONRequest() (*http.Request, error) {
+	b, err := json.Marshal(c.json)
 	if err != nil {
 		return nil, err
 	}
 
-	return http.NewRequest(req.method, req.url, bytes.NewReader(b))
+	return http.NewRequest(c.method, c.url, bytes.NewReader(b))
 }
 
-func (req *Request) buildMultipartRequest() (*http.Request, error) {
+func (c *Client) buildMultipartRequest() (*http.Request, error) {
 	r, w := io.Pipe()
 	mw := multipart.NewWriter(w)
 	go func() {
 		defer w.Close()
 		defer mw.Close()
 
-		for i, v := range req.files {
+		for i, v := range c.files {
 			fieldName, fileName, filePath := v.FieldName, v.FileName, v.FilePath
 			if fieldName == "" {
 				fieldName = "file" + strconv.Itoa(i)
@@ -578,41 +674,43 @@ func (req *Request) buildMultipartRequest() (*http.Request, error) {
 		}
 	}()
 
-	req.headers.Set(ContentType, mw.FormDataContentType())
-	return http.NewRequest(req.method, req.url, r)
+	c.headers.Set(ContentType, mw.FormDataContentType())
+	return http.NewRequest(c.method, c.url, r)
 }
 
-func (req *Request) addParams(httpReq *http.Request) {
+func (c *Client) addParams(httpReq *http.Request) {
 	query := httpReq.URL.Query()
-	for k, v := range req.params {
+	for k, v := range c.params {
 		query.Set(k, v)
 	}
 	httpReq.URL.RawQuery = query.Encode()
 }
 
-func (req *Request) addHeaders(httpReq *http.Request) {
-	for k, v := range req.headers {
+func (c *Client) addHeaders(httpReq *http.Request) {
+	for k, v := range c.headers {
 		httpReq.Header.Set(k, v)
 	}
 }
 
-func (req *Request) addCookies(httpReq *http.Request) {
-	for _, c := range req.cookies {
+func (c *Client) addCookies(httpReq *http.Request) {
+	for _, c := range c.cookies {
 		httpReq.AddCookie(c)
 	}
 }
 
-func (resp *Response) Resolve() (*http.Response, error) {
-	return resp.R, resp.Err
+// Resolve resolves response and returns the original HTTP response.
+func (r *Response) Resolve() (*http.Response, error) {
+	return r.R, r.Err
 }
 
-func (resp *Response) Raw() ([]byte, error) {
-	if resp.Err != nil {
-		return nil, resp.Err
+// Raw reads HTTP response and returns a []byte.
+func (r *Response) Raw() ([]byte, error) {
+	if r.Err != nil {
+		return nil, r.Err
 	}
-	defer resp.R.Body.Close()
+	defer r.R.Body.Close()
 
-	b, err := ioutil.ReadAll(resp.R.Body)
+	b, err := ioutil.ReadAll(r.R.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -620,8 +718,9 @@ func (resp *Response) Raw() ([]byte, error) {
 	return b, nil
 }
 
-func (resp *Response) Text() (string, error) {
-	b, err := resp.Raw()
+// Text reads HTTP response and returns a string.
+func (r *Response) Text() (string, error) {
+	b, err := r.Raw()
 	if err != nil {
 		return "", err
 	}
@@ -629,8 +728,9 @@ func (resp *Response) Text() (string, error) {
 	return string(b), nil
 }
 
-func (resp *Response) JSON(v interface{}) error {
-	b, err := resp.Raw()
+// JSON reads HTTP response and unmarshals it.
+func (r *Response) JSON(v interface{}) error {
+	b, err := r.Raw()
 	if err != nil {
 		return err
 	}
@@ -638,22 +738,24 @@ func (resp *Response) JSON(v interface{}) error {
 	return json.Unmarshal(b, v)
 }
 
-func (resp *Response) EnsureStatusOk() *Response {
-	if resp.Err != nil {
-		return resp
+// EnsureStatusOk ensures status code of the HTTP response must be 200.
+func (r *Response) EnsureStatusOk() *Response {
+	if r.Err != nil {
+		return r
 	}
-	if resp.R.StatusCode != http.StatusOK {
-		resp.Err = fmt.Errorf("status code 200 expected but got: %d", resp.R.StatusCode)
+	if r.R.StatusCode != http.StatusOK {
+		r.Err = fmt.Errorf("status code 200 expected but got: %d", r.R.StatusCode)
 	}
-	return resp
+	return r
 }
 
-func (resp *Response) EnsureStatus2xx(httpResp *http.Response) *Response {
-	if resp.Err != nil {
-		return resp
+// EnsureStatus2xx ensures status code of the HTTP response must be 2xx.
+func (r *Response) EnsureStatus2xx(httpResp *http.Response) *Response {
+	if r.Err != nil {
+		return r
 	}
-	if resp.R.StatusCode != http.StatusOK {
-		resp.Err = fmt.Errorf("status code 2xx expected but got: %d", resp.R.StatusCode)
+	if r.R.StatusCode != http.StatusOK {
+		r.Err = fmt.Errorf("status code 2xx expected but got: %d", r.R.StatusCode)
 	}
-	return resp
+	return r
 }

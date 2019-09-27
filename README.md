@@ -7,7 +7,7 @@ A simple and user-friendly HTTP request library for Go, inspired by the well-kno
 
 - GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, etc.
 - Easy set query params, headers and cookies.
-- Easy encode a form-data or JSON into the request body.
+- Easy encode form-data or JSON into the request body.
 - Easy upload one or more file(s).
 - Easy set basic authentication or bearer token.
 - Easy customize root certificates and client certificates.

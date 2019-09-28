@@ -32,31 +32,31 @@ const (
 	DefaultTimeout = 120 * time.Second
 
 	// ContentType is the same as "Content-Type".
-	ContentType    = "Content-Type"
+	ContentType = "Content-Type"
 
 	// TypeForm is the same as "application/x-www-form-urlencoded".
-	TypeForm       = "application/x-www-form-urlencoded"
+	TypeForm = "application/x-www-form-urlencoded"
 
 	// TypeJSON is the same as "application/json".
-	TypeJSON       = "application/json"
+	TypeJSON = "application/json"
 
 	// MethodGet represents GET HTTP method
-	MethodGet     = "GET"
+	MethodGet = "GET"
 
 	// MethodHead represents HEAD HTTP method
-	MethodHead    = "HEAD"
+	MethodHead = "HEAD"
 
 	// MethodPost represents POST HTTP method
-	MethodPost    = "POST"
+	MethodPost = "POST"
 
 	// MethodPut represents PUT HTTP method
-	MethodPut     = "PUT"
+	MethodPut = "PUT"
 
 	// MethodPatch represents PATCH HTTP method
-	MethodPatch   = "PATCH"
+	MethodPatch = "PATCH"
 
 	// MethodDelete represents DELETE HTTP method
-	MethodDelete  = "DELETE"
+	MethodDelete = "DELETE"
 
 	// MethodConnect represents CONNECT HTTP method
 	MethodConnect = "CONNECT"
@@ -65,7 +65,7 @@ const (
 	MethodOptions = "OPTIONS"
 
 	// MethodTrace represents TRACE HTTP method
-	MethodTrace   = "TRACE"
+	MethodTrace = "TRACE"
 )
 
 var std = New()

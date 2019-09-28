@@ -25,29 +25,53 @@ import (
 )
 
 const (
-	Ver = "0.1" // grequests version
+	// Version of grequests.
+	Version = "0.1"
 
-	DefaultTimeout = 120 * time.Second // default timeout
+	// DefaultTimeout of HTTP client.
+	DefaultTimeout = 120 * time.Second
+
+	// ContentType is the same as "Content-Type".
 	ContentType    = "Content-Type"
+
+	// TypeForm is the same as "application/x-www-form-urlencoded".
 	TypeForm       = "application/x-www-form-urlencoded"
+
+	// TypeJSON is the same as "application/json".
 	TypeJSON       = "application/json"
 
-	// HTTP method
+	// MethodGet represents GET HTTP method
 	MethodGet     = "GET"
+
+	// MethodHead represents HEAD HTTP method
 	MethodHead    = "HEAD"
+
+	// MethodPost represents POST HTTP method
 	MethodPost    = "POST"
+
+	// MethodPut represents PUT HTTP method
 	MethodPut     = "PUT"
+
+	// MethodPatch represents PATCH HTTP method
 	MethodPatch   = "PATCH"
+
+	// MethodDelete represents DELETE HTTP method
 	MethodDelete  = "DELETE"
+
+	// MethodConnect represents CONNECT HTTP method
 	MethodConnect = "CONNECT"
+
+	// MethodOptions represents OPTIONS HTTP method
 	MethodOptions = "OPTIONS"
+
+	// MethodTrace represents TRACE HTTP method
 	MethodTrace   = "TRACE"
 )
 
 var std = New()
 
 type (
-	// Definition of grequests client.
+	// Client defines a grequests client.
 	Client struct {
 		httpClient *http.Client
 		method     string
@@ -62,18 +86,19 @@ type (
 		withLock   bool
 	}
 
-	// Wrapper of HTTP response and request error.
+	// Response wrap HTTP response and request error.
 	Response struct {
 		R   *http.Response
 		Err error
 	}
 
-	// Definition of params, headers, form-data, etc.
+	// Value is the same as map[string]string, used for params, headers, form-data, etc.
 	Value map[string]string
-	// Definition of JSON.
+
+	// Data is the same as map[string]interface{}, used for JSON payload.
 	Data map[string]interface{}
 
-	// Definition of multipart-data.
+	// File defines a multipart-data.
 	File struct {
 		FieldName string
 		FileName  string
@@ -129,7 +154,7 @@ func New() *Client {
 	c.httpClient.Transport = http.DefaultTransport
 	c.httpClient.Timeout = DefaultTimeout
 
-	c.headers.Set("User-Agent", "grequests "+Ver)
+	c.headers.Set("User-Agent", "grequests "+Version)
 	return c
 }
 
@@ -392,7 +417,7 @@ func (c *Client) Patch(url string) *Client {
 	return c
 }
 
-// DELETE calls std.Delete for DELETE HTTP request.
+// Delete calls std.Delete for DELETE HTTP request.
 func Delete(url string) *Client {
 	return std.Delete(url)
 }

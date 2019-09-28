@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/ioutil"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	urlpkg "net/url"
@@ -136,10 +137,10 @@ func (d Data) Del(key string) {
 	delete(d, key)
 }
 
-// New constructors and returns a new client.
+// New constructors and returns a new grequests client.
 func New() *Client {
 	c := &Client{
-		httpClient: http.DefaultClient,
+		httpClient: &http.Client{},
 		params:     make(Value),
 		form:       make(Value),
 		json:       make(Data),
@@ -151,7 +152,19 @@ func New() *Client {
 		PublicSuffixList: publicsuffix.List,
 	})
 	c.httpClient.Jar = jar
-	c.httpClient.Transport = http.DefaultTransport
+	c.httpClient.Transport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
 	c.httpClient.Timeout = DefaultTimeout
 
 	c.headers.Set("User-Agent", "grequests "+Version)
@@ -163,7 +176,7 @@ func WithTransport(transport http.RoundTripper) *Client {
 	return std.WithTransport(transport)
 }
 
-// WithTransport sets transport for the HTTP client.
+// WithTransport sets transport of the HTTP client.
 func (c *Client) WithTransport(transport http.RoundTripper) *Client {
 	c.httpClient.Transport = transport
 	return c
@@ -174,7 +187,7 @@ func WithRedirectPolicy(policy func(req *http.Request, via []*http.Request) erro
 	return std.WithRedirectPolicy(policy)
 }
 
-// WithRedirectPolicy sets redirect policy for the HTTP client
+// WithRedirectPolicy sets redirect policy of the HTTP client
 func (c *Client) WithRedirectPolicy(policy func(req *http.Request, via []*http.Request) error) *Client {
 	c.httpClient.CheckRedirect = policy
 	return c
@@ -185,7 +198,7 @@ func WithCookieJar(jar http.CookieJar) *Client {
 	return std.WithCookieJar(jar)
 }
 
-// WithCookieJar sets cookie jar for the HTTP client.
+// WithCookieJar sets cookie jar of the HTTP client.
 func (c *Client) WithCookieJar(jar http.CookieJar) *Client {
 	c.httpClient.Jar = jar
 	return c
@@ -196,7 +209,7 @@ func WithTimeout(timeout time.Duration) *Client {
 	return std.WithTimeout(timeout)
 }
 
-// WithTimeout set timeout for the HTTP client.
+// WithTimeout set timeout of the HTTP client.
 func (c *Client) WithTimeout(timeout time.Duration) *Client {
 	c.httpClient.Timeout = timeout
 	return c
@@ -207,7 +220,7 @@ func AppendClientCertificates(certs ...tls.Certificate) *Client {
 	return std.AppendClientCertificates(certs...)
 }
 
-// AppendClientCertificates appends client certificates for the HTTP client.
+// AppendClientCertificates appends client certificates of the HTTP client.
 func (c *Client) AppendClientCertificates(certs ...tls.Certificate) *Client {
 	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
@@ -226,7 +239,7 @@ func AppendRootCAs(pemFilePath string) *Client {
 	return std.AppendRootCAs(pemFilePath)
 }
 
-// AppendRootCAs appends RootCAs for the HTTP client.
+// AppendRootCAs appends RootCAs of the HTTP client.
 func (c *Client) AppendRootCAs(pemFilePath string) *Client {
 	pemCert, err := ioutil.ReadFile(pemFilePath)
 	if err != nil {
@@ -253,7 +266,7 @@ func ProxyFromURL(url string) *Client {
 	return std.ProxyFromURL(url)
 }
 
-// ProxyFromURL sets proxy from a url for the HTTP client.
+// ProxyFromURL sets proxy of the HTTP client from a url.
 func (c *Client) ProxyFromURL(url string) *Client {
 	proxyURL, err := urlpkg.Parse(url)
 	if err != nil {
@@ -274,7 +287,7 @@ func DisableProxyFromEnvironment() *Client {
 	return std.DisableProxyFromEnvironment()
 }
 
-// DisableProxyFromEnvironment disables proxy form environment for HTTP client.
+// DisableProxyFromEnvironment disables the HTTP client to use proxy form environment.
 func (c *Client) DisableProxyFromEnvironment() *Client {
 	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
@@ -285,22 +298,22 @@ func (c *Client) DisableProxyFromEnvironment() *Client {
 	return c
 }
 
-// DisableSession calls std.DisableSession to disable session.
+// DisableSession calls std.DisableSession to disable cookie jar.
 func DisableSession() *Client {
 	return std.DisableSession()
 }
 
-// DisableSession disables session for the HTTP client.
+// DisableSession disables cookie jar of the HTTP client.
 func (c *Client) DisableSession() *Client {
 	return c.WithCookieJar(nil)
 }
 
-// DisableRedirect calls std.DisableRedirect to disable request redirect.
+// DisableRedirect calls std.DisableRedirect to disable redirect.
 func DisableRedirect() *Client {
 	return std.DisableRedirect()
 }
 
-// DisableRedirect disables request redirect for the HTTP client.
+// DisableRedirect disables HTTP requests redirect.
 func (c *Client) DisableRedirect() *Client {
 	c.httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
@@ -313,7 +326,7 @@ func DisableKeepAlives() *Client {
 	return std.DisableKeepAlives()
 }
 
-// DisableKeepAlives disables Keep-Alive for the HTTP client.
+// DisableKeepAlives disables HTTP requests Keep-Alive.
 func (c *Client) DisableKeepAlives() *Client {
 	transport, ok := c.httpClient.Transport.(*http.Transport)
 	if !ok {
@@ -349,128 +362,128 @@ func AcquireLock() *Client {
 }
 
 // AcquireLock locks c.
-// Use grequests across goroutines you must call AcquireLock for each request in the beginning
-// otherwise would cause data race.
+// Use grequests across goroutines you must call AcquireLock for each request in the beginning.
+// Necessary, otherwise might cause data race.
 func (c *Client) AcquireLock() *Client {
 	c.mux.Lock()
 	c.withLock = true
 	return c
 }
 
-// Get calls std.Get for GET HTTP request.
+// Get calls std.Get for GET HTTP requests.
 func Get(url string) *Client {
 	return std.Get(url)
 }
 
-// Get does GET HTTP request.
+// Get does GET HTTP requests.
 func (c *Client) Get(url string) *Client {
 	c.method = MethodGet
 	c.url = url
 	return c
 }
 
-// Head calls std.Head for HEAD HTTP request.
+// Head calls std.Head for HEAD HTTP requests.
 func Head(url string) *Client {
 	return std.Head(url)
 }
 
-// Head does HEAD HTTP request.
+// Head does HEAD HTTP requests.
 func (c *Client) Head(url string) *Client {
 	c.method = MethodHead
 	c.url = url
 	return c
 }
 
-// Post calls std.Post for POST HTTP request.
+// Post calls std.Post for POST HTTP requests.
 func Post(url string) *Client {
 	return std.Post(url)
 }
 
-// Post does POST HTTP request.
+// Post does POST HTTP requests.
 func (c *Client) Post(url string) *Client {
 	c.method = MethodPost
 	c.url = url
 	return c
 }
 
-// Put calls std.Put for PUT HTTP request.
+// Put calls std.Put for PUT HTTP requests.
 func Put(url string) *Client {
 	return std.Put(url)
 }
 
-// Put does PUT HTTP request.
+// Put does PUT HTTP requests.
 func (c *Client) Put(url string) *Client {
 	c.method = MethodPut
 	c.url = url
 	return c
 }
 
-// Patch calls std.Patch for PATCH HTTP request.
+// Patch calls std.Patch for PATCH HTTP requests.
 func Patch(url string) *Client {
 	return std.Patch(url)
 }
 
-// Patch does PATCH HTTP request.
+// Patch does PATCH HTTP requests.
 func (c *Client) Patch(url string) *Client {
 	c.method = MethodPatch
 	c.url = url
 	return c
 }
 
-// Delete calls std.Delete for DELETE HTTP request.
+// Delete calls std.Delete for DELETE HTTP requests.
 func Delete(url string) *Client {
 	return std.Delete(url)
 }
 
-// Delete does DELETE HTTP request.
+// Delete does DELETE HTTP requests.
 func (c *Client) Delete(url string) *Client {
 	c.method = MethodDelete
 	c.url = url
 	return c
 }
 
-// Connect calls std.Connect CONNECT HTTP request.
+// Connect calls std.Connect CONNECT HTTP requests.
 func Connect(url string) *Client {
 	return std.Connect(url)
 }
 
-// Connect does CONNECT HTTP request.
+// Connect does CONNECT HTTP requests.
 func (c *Client) Connect(url string) *Client {
 	c.method = MethodConnect
 	c.url = url
 	return c
 }
 
-// Options calls std.Options for OPTIONS HTTP request.
+// Options calls std.Options for OPTIONS HTTP requests.
 func Options(url string) *Client {
 	return std.Options(url)
 }
 
-// Options does OPTIONS HTTP request.
+// Options does OPTIONS HTTP requests.
 func (c *Client) Options(url string) *Client {
 	c.method = MethodOptions
 	c.url = url
 	return c
 }
 
-// Trace calls std.Trace for TRACE HTTP request.
+// Trace calls std.Trace for TRACE HTTP requests.
 func Trace(url string) *Client {
 	return std.Trace(url)
 }
 
-// Trace does TRACE HTTP request.
+// Trace does TRACE HTTP requests.
 func (c *Client) Trace(url string) *Client {
 	c.method = MethodTrace
 	c.url = url
 	return c
 }
 
-// Reset calls std.Reset to reset the client state.
+// Reset calls std.Reset to reset the grequests client state.
 func Reset() {
 	std.Reset()
 }
 
-// Reset reset the client state so that other requests can acquire lock.
+// Reset reset the grequests client state so that other requests can acquire lock.
 func (c *Client) Reset() {
 	c.method = ""
 	c.url = ""
@@ -491,7 +504,7 @@ func Params(params Value) *Client {
 	return std.Params(params)
 }
 
-// Params sets query params for the HTTP request.
+// Params sets query params of the HTTP request.
 func (c *Client) Params(params Value) *Client {
 	for k, v := range params {
 		c.params.Set(k, v)
@@ -513,12 +526,12 @@ func (c *Client) Form(form Value) *Client {
 	return c
 }
 
-// JSON calls std.JSON to send JSON.
+// JSON calls std.JSON to send JSON payload.
 func JSON(data Data) *Client {
 	return std.JSON(data)
 }
 
-// JSON encodes JSON into the HTTP request body.
+// JSON encodes JSON payload into the HTTP request body.
 func (c *Client) JSON(data Data) *Client {
 	c.headers.Set(ContentType, TypeJSON)
 	for k, v := range data {
@@ -543,7 +556,7 @@ func Headers(headers Value) *Client {
 	return std.Headers(headers)
 }
 
-// Headers sets headers for the HTTP request.
+// Headers sets headers of the HTTP request.
 func (c *Client) Headers(headers Value) *Client {
 	for k, v := range headers {
 		c.headers.Set(k, v)
@@ -556,7 +569,7 @@ func Cookies(cookies ...*http.Cookie) *Client {
 	return std.Cookies(cookies...)
 }
 
-// Cookies sets cookies for the HTTP request.
+// Cookies sets cookies of the HTTP request.
 func (c *Client) Cookies(cookies ...*http.Cookie) *Client {
 	c.cookies = append(c.cookies, cookies...)
 	return c
@@ -567,7 +580,7 @@ func BasicAuth(username, password string) *Client {
 	return std.BasicAuth(username, password)
 }
 
-// BasicAuth sets basic authentication for the HTTP request.
+// BasicAuth sets basic authentication of the HTTP request.
 func (c *Client) BasicAuth(username, password string) *Client {
 	c.headers.Set("Authorization", "Basic "+basicAuth(username, password))
 	return c
@@ -583,18 +596,18 @@ func BearerToken(token string) *Client {
 	return std.BearerToken(token)
 }
 
-// BearerToken sets bearer token for the HTTP request.
+// BearerToken sets bearer token of the HTTP request.
 func (c *Client) BearerToken(token string) *Client {
 	c.headers.Set("Authorization", "Bearer "+token)
 	return c
 }
 
-// Send calls std.Send to send HTTP request.
+// Send calls std.Send to send the HTTP request.
 func Send() *Response {
 	return std.Send()
 }
 
-// Send sends HTTP request and get its response.
+// Send sends the HTTP request and returns response.
 func (c *Client) Send() *Response {
 	resp := new(Response)
 	if c.url == "" {
@@ -728,7 +741,7 @@ func (r *Response) Resolve() (*http.Response, error) {
 	return r.R, r.Err
 }
 
-// Raw reads HTTP response and returns a []byte.
+// Raw reads the HTTP response and returns a []byte.
 func (r *Response) Raw() ([]byte, error) {
 	if r.Err != nil {
 		return nil, r.Err
@@ -743,7 +756,7 @@ func (r *Response) Raw() ([]byte, error) {
 	return b, nil
 }
 
-// Text reads HTTP response and returns a string.
+// Text reads the HTTP response and returns a string.
 func (r *Response) Text() (string, error) {
 	b, err := r.Raw()
 	if err != nil {
@@ -753,7 +766,7 @@ func (r *Response) Text() (string, error) {
 	return string(b), nil
 }
 
-// JSON reads HTTP response and unmarshals it.
+// JSON reads the HTTP response and unmarshals it.
 func (r *Response) JSON(v interface{}) error {
 	b, err := r.Raw()
 	if err != nil {

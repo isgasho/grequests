@@ -203,3 +203,7 @@ func TestBearerToken(t *testing.T) {
 		t.Error("Set basic authentication failed")
 	}
 }
+
+func TestNew(t *testing.T) {
+	
+}
